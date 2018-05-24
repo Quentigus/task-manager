@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Rx';
-import { environment } from '../../environments/environment';
+import { Observable, BehaviorSubject } from 'rxjs/Rx';
+import { environment } from '../environments/environment';
 import { HttpClient } from '@angular/common/http';
+import { map } from 'rxjs/operators';
 
 export class User {
   token: string;      // BEDFC950-5D4E-7A49-FFBF-8893AFDEC700
@@ -17,12 +18,12 @@ export class User {
   // userStatus: ENABLED,
 }
 
-class LoginInput {
+export class LoginInput {
   email: string;
   password: string;
 }
 
-class RegisterInput extends LoginInput {
+export class RegisterInput extends LoginInput {
   name: string;
 }
 
@@ -30,15 +31,30 @@ class RegisterInput extends LoginInput {
 export class UserService {
   private url: string = environment.services.users;
 
+  private currentUser: BehaviorSubject<User> = new BehaviorSubject(undefined);
+  public currentUser$ = this.currentUser.asObservable();
+
   constructor(
     private httpClient: HttpClient
   ) { }
 
   login(datas: LoginInput): Observable<User> {
-    return this.httpClient.post<User>(this.url, datas);
+    return this.httpClient.post<User>(this.url, datas)
+      .pipe(
+        map((user: User ) => {
+          this.currentUser.next(user);
+          return user;
+        })
+      );
   }
 
   register(datas: RegisterInput): Observable<User> {
-    return this.httpClient.put<User>(this.url, datas);
+    return this.httpClient.put<User>(this.url, datas)
+      .pipe(
+        map((user: User) => {
+          this.currentUser.next(user);
+          return user;
+        })
+      );
   }
 }

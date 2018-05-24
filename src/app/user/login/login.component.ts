@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { UserService, User, LoginInput } from '../../user.service';
 
 @Component({
   selector: 'qgo-login',
@@ -7,9 +8,21 @@ import { Component, OnInit } from '@angular/core';
 })
 export class LoginComponent implements OnInit {
 
-  constructor() { }
+  constructor(
+    private userService: UserService
+  ) { }
 
   ngOnInit() {
+    let input = {
+      email: 'taskmanagerqgo@yopmai.com',
+      password: 'mot2passe' 
+    } as LoginInput;
+
+    this.userService.login(input)
+      .subscribe((user: User) => {
+        console.log(user.token);
+      });
   }
 
 }
+
